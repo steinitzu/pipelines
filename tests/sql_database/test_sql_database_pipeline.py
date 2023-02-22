@@ -5,7 +5,7 @@ import dlt
 from pipelines.sql_database import sql_database
 
 from tests.utils import ALL_DESTINATIONS, assert_load_info
-from tests.sql_source import SQLAlchemySourceDB
+from tests.sql_database.sql_source import SQLAlchemySourceDB
 from pipelines.sql_database import sql_database
 
 
@@ -17,7 +17,7 @@ def test_load_sql_schema_loads_all_tables(sql_source_db: SQLAlchemySourceDB, des
         dataset_name='my_sql_data',
         full_refresh=False
     )
-    load_info = pipeline.run(sql_database(sql_source_db.database_url, schema=sql_source_db.schema))
+    load_info = pipeline.run(sql_database(sql_source_db.credentials, schema=sql_source_db.schema))
     assert_load_info(load_info)
 
     with pipeline.sql_client() as c:
@@ -25,3 +25,4 @@ def test_load_sql_schema_loads_all_tables(sql_source_db: SQLAlchemySourceDB, des
             with c.execute_query(f"SELECT count(*) FROM {table}") as cur:
                 row = cur.fetchone()
                 assert row[0] == info['row_count']
+

@@ -1,6 +1,6 @@
 from typing import Generator, List, TypedDict, Dict
+from uuid import uuid4
 
-import pytest
 import mimesis
 from sqlalchemy import (
     create_engine,
@@ -19,6 +19,8 @@ from sqlalchemy import (
 )
 
 from dlt.common.utils import chunks
+from dlt.common.configuration.specs.postgres_credentials import ConnectionStringCredentials
+from dlt.common.configuration import with_config
 
 
 class TableInfo(TypedDict):
@@ -26,9 +28,15 @@ class TableInfo(TypedDict):
 
 
 class SQLAlchemySourceDB:
-    def __init__(self) -> None:
-        self.database_url = "postgresql://loader:loader@localhost/dlt_source"
-        self.schema = "my_dlt_source"
+    @with_config(namespaces=('test', 'sources', 'sql_database'))
+    def __init__(
+        self,
+        credentials: ConnectionStringCredentials = "postgresql://loader:loader@localhost/dlt_source", # type: ignore
+        schema: str = None
+    ) -> None:
+        self.database_url = credentials.to_native_representation()
+        self.credentials = credentials
+        self.schema = "dlt_sql_" + uuid4().hex
         self.engine = create_engine(self.database_url)
         self.metadata = MetaData(schema=self.schema)
         self.table_infos: Dict[str, TableInfo] = {}

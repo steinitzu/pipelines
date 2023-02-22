@@ -35,14 +35,11 @@ class SQLAlchemySourceDB:
 
     def create_schema(self) -> None:
         with self.engine.begin() as conn:
-            conn.execute(sqla_schema.CreateSchema(self.schema, if_not_exists=True))
-            conn.commit()
+            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {self.schema}"))
 
     def drop_schema(self) -> None:
         with self.engine.begin() as conn:
-            conn.execute(
-                sqla_schema.DropSchema(self.schema, cascade=True, if_exists=True)
-            )
+            conn.execute(text(f"DROP SCHEMA IF EXISTS {self.schema} CASCADE"))
 
     def create_tables(self) -> None:
         Table(
